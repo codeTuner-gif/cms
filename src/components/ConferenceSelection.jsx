@@ -426,6 +426,46 @@ function ConferenceSelection() {
                   </label>
                 </div>
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="plagiarismCheck"
+                    className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+                  >
+                    <span className="text-xs font-medium text-gray-700">
+                      Plagiarism Website
+                    </span>
+                    <input
+                      type="text"
+                      id="plagiarismCheck"
+                      name="plagiarismWebsite"
+                      value={selectedconference.plagiarismWebsite}
+                      onChange={handleInputChange} // Update the input on change
+                      className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
+                      disabled={!isEditing}
+                    />
+                  </label>
+                </div>
+                <div>
+                  <label
+                    htmlFor="copyRightCheck"
+                    className="block overflow-hidden rounded-md border border-gray-200 px-3 py-2 shadow-sm focus-within:border-blue-600 focus-within:ring-1 focus-within:ring-blue-600"
+                  >
+                    <span className="text-xs font-medium text-gray-700">
+                      Copyright Website
+                    </span>
+                    <input
+                      type="text"
+                      id="copyRightCheck"
+                      name="copyrightWebsite"
+                      value={selectedconference.copyrightWebsite}
+                      onChange={handleInputChange} // Update the input on change
+                      className="mt-1 w-full border-none p-0 focus:border-transparent focus:outline-none focus:ring-0 sm:text-sm"
+                      disabled={!isEditing}
+                    />
+                  </label>
+                </div>
+              </div>
             </form>
             <div>
               {updateMessage && (

@@ -1,10 +1,21 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // Import the icons
+import { getAllConference } from "../services/ConferenceServices";
+import {
+  getConferenceById,
+  editConference,
+} from "../services/ConferenceServices";
+
 
 const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
+  const [selectedconference, setSelectedConference] = useState({});
+  const [conference, setConference] = useState([]);
+  const [data, SetData] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [temp, setTemp] = useState();
 
   useEffect(() => {
     const handleResize = () => {
@@ -15,13 +26,40 @@ const Sidebar = () => {
       }
     };
 
+
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    getAllConference()
+      .then((Response) => {
+        setConference(Response.data);
+        SetData(false);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoading(false);
+      });
+  }, []);
+
+  useEffect(() => {
+    const conference_id = sessionStorage.getItem("con");
+    if (conference_id) {
+      getConferenceById(conference_id)
+        .then((Response) => {
+          setSelectedConference(Response.data);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+    setTemp(0);
+  }, [temp]);
+
   const Menus = [
-    { title: "Subscriber Registration", src: "Home", path: "/subscriber-registration" },
     {
       title: "Create Conference",
       src: "Chart_fill",
@@ -36,8 +74,18 @@ const Sidebar = () => {
         { title: "Members", path: "/Members" },
         { title: "Tracks", path: "/tracks" },
         { title: "Reviewers", path: "/reviewers-registration" },
-        { title: "Check Plagiarism", path: "/select-conference/sub5" },
-        { title: "Send for Copyright", path: "/select-conference/sub6" },
+        {
+          title: "Check Plagiarism",
+          path: selectedconference?.plagiarismWebsite || "/select-conference/sub5",
+          isExternal: !!selectedconference?.plagiarismWebsite,
+        },
+        {
+          title: "Send for Copyright",
+          path: selectedconference?.copyrightWebsite || "/select-conference/sub6",
+          isExternal: !!selectedconference?.copyrightWebsite,
+        },
+        
+        
         { title: "Author Registration", path: "/authors-registration" },
       ],
     },
@@ -55,10 +103,22 @@ const Sidebar = () => {
             { title: "List of papers", path: "/listofpapers" },
             { title: "Author-wise", path: "/authorwisepapers" },
             { title: "Track wise", path: "/trackwisepapers" },
-            { title: "List of papers with status", path: "/papers_status_last_upload_date" },
-            { title: "Decision wise list of papers", path: "/DecisionWiseListOfPapers" },
-            { title: "List of papers send for plagiarism check", path: "/Paperswithplagiarism" },
-            { title: "List of papers send for copyright", path: "/Papercopyright" },
+            {
+              title: "List of papers with status",
+              path: "/papers_status_last_upload_date",
+            },
+            {
+              title: "Decision wise list of papers",
+              path: "/DecisionWiseListOfPapers",
+            },
+            {
+              title: "List of papers send for plagiarism check",
+              path: "/Paperswithplagiarism",
+            },
+            {
+              title: "List of papers send for copyright",
+              path: "/Papercopyright",
+            },
             {
               title: "Authors",
               subMenu: [
@@ -72,8 +132,14 @@ const Sidebar = () => {
           title: "Review",
           subMenu: [
             { title: "List of reviewers", path: "/listofreviewers" },
-            { title: "List of papers reviewer wise", path: "/Reviewerwisepapers" },
-            { title: "List of papers with reviewers name", path: "/papers_with_reviewers" },
+            {
+              title: "List of papers reviewer wise",
+              path: "/Reviewerwisepapers",
+            },
+            {
+              title: "List of papers with reviewers name",
+              path: "/papers_with_reviewers",
+            },
           ],
         },
         {
@@ -81,7 +147,10 @@ const Sidebar = () => {
           subMenu: [
             { title: "List of committees", path: "/ListCommittee" },
             { title: "List of all members", path: "/listofallmembers" },
-            { title: "List of members committee wise", path: "/CommitteewiseMembers" },
+            {
+              title: "List of members committee wise",
+              path: "/CommitteewiseMembers",
+            },
             { title: "TPC Members", path: "/tpcmembers" },
           ],
         },
@@ -133,9 +202,20 @@ const Sidebar = () => {
         {subMenu.map((subMenuItem, subSubIndex) => (
           <li key={subSubIndex} className={`text-black text-sm`}>
             <div className="flex justify-between items-center">
-              <Link to={subMenuItem.path} className={`hover:text-white`}>
-                {subMenuItem.title}
-              </Link>
+              {subMenuItem.isExternal ? (
+                <a
+                  href={subMenuItem.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`hover:text-white`}
+                >
+                  {subMenuItem.title}
+                </a>
+              ) : (
+                <Link to={subMenuItem.path} className={`hover:text-white`}>
+                  {subMenuItem.title}
+                </Link>
+              )}
               {subMenuItem.subMenu && (
                 <button
                   className="text-black"
@@ -146,7 +226,11 @@ const Sidebar = () => {
                     }));
                   }}
                 >
-                  {submenuVisibility[subSubIndex] ? <FaChevronUp /> : <FaChevronDown />}
+                  {submenuVisibility[subSubIndex] ? (
+                    <FaChevronUp />
+                  ) : (
+                    <FaChevronDown />
+                  )}
                 </button>
               )}
             </div>
@@ -160,6 +244,7 @@ const Sidebar = () => {
       </ul>
     );
   };
+  
 
   return (
     <div className="flex">
@@ -171,27 +256,40 @@ const Sidebar = () => {
         <ul className="pt-6">
           {Menus.map((Menu, index) => (
             <li key={index} className="relative">
-              <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center">
+              {Menu.isExternal ? (
+                <a
+                  href={Menu.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`flex rounded-md p-2 cursor-pointer hover:bg-light-white text-black text-sm items-center gap-x-4`}
+                >
+                  <span className={`${!open && "hidden"} origin-left duration-200`}>
+                    {Menu.title}
+                  </span>
+                </a>
+              ) : (
                 <Link
                   to={Menu.path}
-                  className={`flex rounded-md p-2 cursor-pointer hover:bg-light-white text-black text-sm items-center gap-x-4 ${
-                    Menu.gap ? "mt-9" : "mt-2"
-                  } ${index === 0 && "bg-light-white"}`}
+                  className={`flex rounded-md p-2 cursor-pointer hover:bg-light-white text-black text-sm items-center gap-x-4`}
                 >
-                  <span
-                    className={`${!open && "hidden"} origin-left duration-200`}
-                  >
+                  <span className={`${!open && "hidden"} origin-left duration-200`}>
                     {Menu.title}
                   </span>
                 </Link>
-                {Menu.subMenu && (
-                  <button onClick={() => toggleSubMenu(index)} className="text-black">
-                    {activeMenu === index ? <FaChevronUp /> : <FaChevronDown />}
-                  </button>
-                )}
-              </div>
-              {Menu.subMenu && activeMenu === index && renderSubMenu(Menu.subMenu, index)}
-            </li>
+              )}
+              {Menu.subMenu && (
+                <button
+                  onClick={() => toggleSubMenu(index)}
+                  className="text-black"
+                >
+                  {activeMenu === index ? <FaChevronUp /> : <FaChevronDown />}
+                </button>
+              )}
+            </div>
+            {Menu.subMenu && activeMenu === index && renderSubMenu(Menu.subMenu, index)}
+          </li>
+          
           ))}
         </ul>
       </div>

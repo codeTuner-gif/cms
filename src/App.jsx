@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Home from './components/Home';
-import SubscriberRegistration from './components/SubscriberRegistration';
 import CreateConference from './components/ConferenceCreation';
 import SelectConference from './components/ConferenceSelection';
 import ReviewerInvitation from './components/ReviewInvitetion';
@@ -42,7 +41,6 @@ function App() {
   return (
     <Router>
       <Routes>
-      <Route path="/subscriber-registration" element={<SubscriberRegistration />} />
         <Route
           path="/authors-registration"
           element={<AuthorRegistration />}
